@@ -30,9 +30,6 @@
           regexp: "^version: "
           line: "version: {{ version }}"
 
-      - name: Update documentation
-        ansible.builtin.command: 'antsibull-docs collection-plugins microsoft.scom --dest-dir {{ playbook_dir }}/../docs --use-current --output-format simplified-rst --fqcn-plugin-names'
-
       - name: Refresh the changelog
         ansible.builtin.command: 'antsibull-changelog release --verbose --version {{ version }}'
 

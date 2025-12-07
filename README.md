@@ -1,5 +1,5 @@
 # Microsoft MECM Infrastructure Operations Collection for Ansible
-[![CI](https://github.com/ansible-collections/microsoft.infra.mecm_ops/workflows/CI/badge.svg?event=push)](https://github.com/ansible-collections/microsoft.infra.mecm_ops/actions) [![Codecov](https://img.shields.io/codecov/c/github/ansible-collections/microsoft.infra.mecm_ops)](https://codecov.io/gh/ansible-collections/microsoft.infra.mecm_ops)
+[![CI](https://github.com/ansible-collections/infra.mecm_ops/workflows/CI/badge.svg?event=push)](https://github.com/ansible-collections/infra.mecm_ops/actions) [![Codecov](https://img.shields.io/codecov/c/github/ansible-collections/infra.mecm_ops)](https://codecov.io/gh/ansible-collections/infra.mecm_ops)
 
 This collection provides Ansible infrastructure and operations modules for Microsoft System Center Configuration Manager (MECM/SCCM/ConfigMgr) deployments, focusing on infrastructure management, monitoring, and operational tasks.
 
@@ -85,32 +85,32 @@ Every voice is important. If you have something on your mind, create an issue or
 
 Before using this collection, you need to install it with the Ansible Galaxy command-line tool:
 ```bash
-ansible-galaxy collection install microsoft.infra.mecm_ops
+ansible-galaxy collection install infra.mecm_ops
 ```
 
 You can also include it in a `requirements.yml` file and install it with `ansible-galaxy collection install -r requirements.yml`, using the format:
 ```yaml
 ---
 collections:
-  - name: microsoft.infra.mecm_ops
+  - name: infra.mecm_ops
 ```
 
 Note that if you install the collection from Ansible Galaxy, it will not be upgraded automatically when you upgrade the `ansible` package. To upgrade the collection to the latest available version, run the following command:
 ```bash
-ansible-galaxy collection install microsoft.infra.mecm_ops --upgrade
+ansible-galaxy collection install infra.mecm_ops --upgrade
 ```
 
 You can also install a specific version of the collection, for example, if you need to downgrade when something is broken in the latest version (please report an issue in this repository). Use the following syntax to install version `0.1.0`:
 
 ```bash
-ansible-galaxy collection install microsoft.infra.mecm_ops:==0.1.0
+ansible-galaxy collection install infra.mecm_ops:==0.1.0
 ```
 
 See [using Ansible collections](https://docs.ansible.com/ansible/devel/user_guide/collections_using.html) for more details.
 
 ## Release notes
 
-See the [changelog](https://github.com/ansible-collections/microsoft.infra.mecm_ops/tree/main/CHANGELOG.rst).
+See the [changelog](https://github.com/ansible-collections/infra.mecm_ops/tree/main/CHANGELOG.rst).
 
 ## Roadmap
 
