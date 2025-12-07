@@ -1,0 +1,29 @@
+---
+# See https://docs.ansible.com/ansible/latest/dev_guide/collections_galaxy_meta.html
+namespace: microsoft
+name: infra.mecm_ops
+version: 0.1.0
+readme: README.md
+authors:
+  - Ansible Community
+description: Ansible collection for Microsoft System Center Configuration Manager (MECM/SCCM/ConfigMgr) infrastructure operations and management
+license_file: LICENSE
+tags:
+  - microsoft
+  - mecm
+  - sccm
+  - configmgr
+  - windows
+  - infrastructure
+  - operations
+  - monitoring
+repository: https://github.com/ansible-collections/microsoft.infra.mecm_ops
+# documentation: https://github.com/ansible-collections/microsoft.infra.mecm_ops/tree/main/docs
+homepage: https://github.com/ansible-collections/microsoft.infra.mecm_ops
+issues: https://github.com/ansible-collections/microsoft.infra.mecm_ops/issues
+build_ignore:
+  - .gitignore
+  - changelogs/.plugin-cache.yaml
+  - tests/integration/inventory.winrm
+  - CLAUDE.md
+  - .claude*
