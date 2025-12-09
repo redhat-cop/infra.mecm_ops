@@ -1,0 +1,21 @@
+---
+- name: Gather facts
+  ansible.builtin.setup: {}
+  when: ansible_facts is not defined
+
+- name: Check required inputs
+  ansible.builtin.assert:
+    that:
+      - emergency_patch_site_code is defined
+      - emergency_patch_state == 'present' or emergency_patch_state == 'absent'
+
+- name: Check required inputs for present state
+  ansible.builtin.assert:
+    that:
+      - emergency_patch_site_code is defined
+      - emergency_patch_software_update_ids is defined or emergency_patch_software_update_kbs is defined
+      - emergency_patch_collection_name is defined or emergency_patch_collection_id is defined
+  when: emergency_patch_state == 'present'
+
+- name: Include tasks
+  ansible.builtin.include_tasks: "{{ emergency_patch_state }}.yml"

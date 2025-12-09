@@ -1,0 +1,18 @@
+---
+- name: Delete software update group
+  microsoft.mecm.software_update_group:
+    site_code: "{{ emergency_patch_site_code }}"
+    name: "{{ emergency_patch_software_update_group_name }}"
+    state: absent
+  register: _create_sug
+
+- name: Delete software deployment
+  microsoft.mecm.deployment:
+    site_code: "{{ emergency_patch_site_code }}"
+    state: absent
+    name: "{{ emergency_patch_deployment_name }}"
+
+- name: Remove site PS drive
+  microsoft.mecm.site_ps_drive:
+    site_code: "{{ emergency_patch_site_code }}"
+    state: absent

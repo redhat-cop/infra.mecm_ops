@@ -1,0 +1,14 @@
+---
+galaxy_info:
+  author: Ansible Cloud Content Team (@redhat-cop)
+  description: Create a temporary software update group and deployment for emergency patching
+  company: Red Hat, Inc.
+  license: GPL-3.0-or-later
+  min_ansible_version: "2.16"
+  galaxy_tags:
+    - infrastructure
+    - microsoft
+    - mecm
+    - sccm
+
+dependencies: []

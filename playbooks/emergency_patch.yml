@@ -1,0 +1,28 @@
+---
+- name: Create emergency patch deployment
+  hosts: mecmserver
+  gather_facts: false
+
+  roles:
+    - role: infra.mecm.emergency_patch
+
+
+- name: Install and wait for patch to complete
+  hosts: all
+  gather_facts: false
+  tasks:
+    - name: Install patch
+      microsoft.mecm.install_updates:
+        site_code: "{{ emergency_patch_site_code }}"
+        wait_for_completion: true
+        timeout_minutes: "{{ emergency_patch_timeout_minutes | default(omit) }}"
+        allow_reboot: "{{ emergency_patch_deployment_allow_restarts | default(omit) }}"
+
+
+- name: Delete emergency patch deployment
+  hosts: mecmserver
+  gather_facts: false
+
+  roles:
+    - role: infra.mecm.emergency_patch
+      emergency_patch_state: absent
