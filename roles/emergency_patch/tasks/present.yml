@@ -4,18 +4,23 @@
     site_code: "{{ emergency_patch_site_code }}"
     state: present
 
-- name: Lookup software updates by KB
-  when: emergency_patch_software_update_kbs is defined
-  block:
-    - name: Gather software update info
-      microsoft.mecm.software_update_info:
-        site_code: "{{ emergency_patch_site_code }}"
-        kb_numbers: "{{ emergency_patch_software_update_kbs }}"
-      register: _su_info
-    - name: Parse update ids
-      ansible.builtin.set_fact:
-        emergency_patch_software_update_ids: >-
-          {{ emergency_patch_software_update_kbs.software_updates | map(attribute=id) }}
+# - name: Lookup software updates by KB
+#   when: emergency_patch_software_update_kbs is defined
+#   block:
+#     - name: Gather software update info
+#       microsoft.mecm.software_update_info:
+#         site_code: "{{ emergency_patch_site_code }}"
+#         article_ids: "{{ emergency_patch_software_update_article_ids }}"
+#       register: _su_info
+#     - name: Parse update ids
+#       ansible.builtin.set_fact:
+#         emergency_patch_software_update_ids: >-
+#           {{ emergency_patch_software_update_kbs.software_updates | map(attribute=id) }}
+#     - name: Make sure software update ids were found
+#       ansible.builtin.assert:
+#         that:
+#           - emergency_patch_software_update_ids | length > 0
+#         fail_msg: "No software update ids found for the given article ids"
 
 - name: Create software update group
   microsoft.mecm.software_update_group:
@@ -26,7 +31,7 @@
   register: _create_sug
 
 - name: Create software deployment
-  microsoft.mecm.deployment:
+  microsoft.mecm.software_update_deployment:
     site_code: "{{ emergency_patch_site_code }}"
     state: present
     software_update_group_id: "{{ _create_sug.software_update_group.id }}"
@@ -34,11 +39,12 @@
     collection_id: "{{ emergency_patch_collection_id | default(omit) }}"
     name: "{{ emergency_patch_deployment_name }}"
     available_time: "{{ ansible_facts['date_time']['iso8601'] }}"
-    expiration_time: "{{ ansible_facts['date_time']['iso8601'] }}"
+    deadline_time: "{{ ansible_facts['date_time']['iso8601'] }}"
     deployment_type: required
     require_post_reboot_full_scan: true
     enable_soft_deadline: "{{ emergency_patch_deployment_enable_soft_deadline | default(false) }}"
     allow_installation_outside_maintenance_window: "{{ emergency_patch_deployment_allow_installation_outside_maintenance_window | default(true) }}"
+    enabled: true
     # optional params
     description: "{{ emergency_patch_deployment_description | default(omit) }}"
     allow_restarts: "{{ emergency_patch_deployment_allow_restarts | default(omit) }}"
@@ -61,3 +67,10 @@
     distribution_collection_name: "{{ emergency_patch_deployment_distribution_collection_name | default(omit) }}"
     distribution_point_group_name: "{{ emergency_patch_deployment_distribution_point_group_name | default(omit) }}"
     distribution_point_name: "{{ emergency_patch_deployment_distribution_point_name | default(omit) }}"
+  register: _create_deployment
+
+- name: Set identifiers in emergency_patch_present_facts variable
+  ansible.builtin.set_fact:
+    emergency_patch_present_facts:
+      software_update_group_id: "{{ _create_sug.software_update_group.id }}"
+      software_update_deployment_id: "{{ _create_deployment.software_update_deployment.id }}"

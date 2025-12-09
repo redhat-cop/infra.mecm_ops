@@ -2,6 +2,14 @@
 
 A role to create or delete temporary resources for an emergency patch deployment.
 
+## Outputs
+
+When the state is present, this role outputs a variable `emergency_patch_present_facts` with the following attributes:
+
+- **software_update_group_id**
+- **software_update_deployment_id**
+
+
 ## Dependencies
 
 N/A
@@ -17,6 +25,18 @@ N/A
     - The state of the emergency patch resources. Either present or absent.
     - If present, the patch deployment will be created. If absent, the deployment will be removed.
 
+- **emergency_patch_collection_name** (str, optional)
+    - The name of the device collection to target for the deployment.
+    - Either `emergency_patch_collection_name` or `emergency_patch_collection_id` is required.
+
+- **emergency_patch_collection_id** (str, optional)
+    - The CI ID of the device collection to target for the deployment.
+    - Either `emergency_patch_collection_name` or `emergency_patch_collection_id` is required.
+
+- **emergency_patch_remove_site_ps_drive** (bool, optional)
+    - If true, the PS drive for the site will be removed when cleaning up resources (`emergency_patch_state` is absent).
+    - Defaults to `true`
+
 ### Software Update Group
 
 - **emergency_patch_software_update_group_name** (str, optional)
@@ -30,12 +50,12 @@ N/A
 - **emergency_patch_software_update_ids** (list(str), optional)
     - A list of software update IDs to include in the update deployment.
     - These IDs are the CI IDs from the update properties in SCCM/MECM.
-    - Either `emergency_patch_software_update_ids` or `emergency_patch_software_update_kbs` is required when
+    - Either `emergency_patch_software_update_ids` or `emergency_patch_software_update_article_ids` is required when
       `emergency_patch_state` is present
 
-- **emergency_patch_software_update_kbs** (list(str), optional)
-    - A list of software update KB numbers to include in the update deployment.
-    - Either `emergency_patch_software_update_ids` or `emergency_patch_software_update_kbs` is required when
+- **emergency_patch_software_update_article_ids** (list(str), optional)
+    - A list of software update article IDs to include in the update deployment.
+    - Either `emergency_patch_software_update_ids` or `emergency_patch_software_update_article_ids` is required when
       `emergency_patch_state` is present
 
 
@@ -48,16 +68,6 @@ N/A
 
 - **emergency_patch_deployment_description** (str, optional)
     - The description for the temporary software update group.
-
-- **emergency_patch_collection_name** (str, optional)
-    - The name of the device collection to target for the deployment.
-    - Either `emergency_patch_collection_name` or `emergency_patch_collection_id` is required when
-      `emergency_patch_state` is present
-
-- **emergency_patch_collection_id** (str, optional)
-    - The CI ID of the device collection to target for the deployment.
-    - Either `emergency_patch_collection_name` or `emergency_patch_collection_id` is required when
-      `emergency_patch_state` is present
 
 - **emergency_patch_deployment_enable_soft_deadline** (bool, optional)
     - Enable soft deadline for the deployment.
