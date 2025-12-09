@@ -4,23 +4,23 @@
     site_code: "{{ emergency_patch_site_code }}"
     state: present
 
-# - name: Lookup software updates by KB
-#   when: emergency_patch_software_update_kbs is defined
-#   block:
-#     - name: Gather software update info
-#       microsoft.mecm.software_update_info:
-#         site_code: "{{ emergency_patch_site_code }}"
-#         article_ids: "{{ emergency_patch_software_update_article_ids }}"
-#       register: _su_info
-#     - name: Parse update ids
-#       ansible.builtin.set_fact:
-#         emergency_patch_software_update_ids: >-
-#           {{ emergency_patch_software_update_kbs.software_updates | map(attribute=id) }}
-#     - name: Make sure software update ids were found
-#       ansible.builtin.assert:
-#         that:
-#           - emergency_patch_software_update_ids | length > 0
-#         fail_msg: "No software update ids found for the given article ids"
+- name: Lookup software updates by KB
+  when: emergency_patch_software_update_kbs is defined
+  block:
+    - name: Gather software update info
+      microsoft.mecm.software_update_info:
+        site_code: "{{ emergency_patch_site_code }}"
+        article_ids: "{{ emergency_patch_software_update_article_ids }}"
+      register: _su_info
+    - name: Parse update ids
+      ansible.builtin.set_fact:
+        emergency_patch_software_update_ids: >-
+          {{ emergency_patch_software_update_kbs.software_updates | map(attribute=id) }}
+    - name: Make sure software update ids were found
+      ansible.builtin.assert:
+        that:
+          - emergency_patch_software_update_ids | length > 0
+        fail_msg: "No software update ids found for the given article ids"
 
 - name: Create software update group
   microsoft.mecm.software_update_group:
