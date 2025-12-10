@@ -1,0 +1,12 @@
+---
+- name: Remove health check report file
+  ansible.windows.win_file:
+    path: "{{ health_check_report_output_directory }}/{{ health_check_report_filename }}"
+    state: absent
+  when: health_check_report_filename is defined
+
+- name: Remove site PS drive
+  microsoft.mecm.site_ps_drive:
+    site_code: "{{ health_check_report_site_code }}"
+    state: absent
+  when: health_check_report_remove_site_ps_drive

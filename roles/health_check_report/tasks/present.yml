@@ -1,0 +1,95 @@
+---
+- name: Setup a site PS drive
+  microsoft.mecm.site_ps_drive:
+    site_code: "{{ health_check_report_site_code }}"
+    state: present
+
+- name: Create output directory
+  ansible.windows.win_file:
+    path: "{{ health_check_report_output_directory }}"
+    state: directory
+
+- name: Gather site status messages
+  microsoft.mecm.site_status_message_info:
+    site_code: "{{ health_check_report_site_code }}"
+  register: _site_status_message_info
+
+- name: Gather software update group information
+  microsoft.mecm.software_update_group_info:
+    site_code: "{{ health_check_report_site_code }}"
+  register: _software_update_group_info
+
+- name: Gather software update deployment information
+  microsoft.mecm.software_update_deployment_info:
+    site_code: "{{ health_check_report_site_code }}"
+  register: _software_update_deployment_info
+
+- name: Gather backup status information
+  microsoft.mecm.backups_status_info:
+    site_code: "{{ health_check_report_site_code }}"
+  register: _backups_status_info
+
+- name: Gather distribution point status information
+  microsoft.mecm.dp_status_info:
+    site_code: "{{ health_check_report_site_code }}"
+  register: _dp_status_info
+
+- name: Gather WSUS sync status information
+  microsoft.mecm.wsus_sync_status_info:
+    computer_name: "{{ health_check_report_computer_name | default(ansible_fqdn) }}"
+    site_code: "{{ health_check_report_site_code }}"
+  register: _wsus_sync_status_info
+
+- name: Analyze health status
+  ansible.builtin.set_fact:
+    health_check_analysis:
+      timestamp: "{{ ansible_facts['date_time']['iso8601'] }}"
+      site_code: "{{ health_check_report_site_code }}"
+      site_status_messages: "{{ _site_status_message_info.site_status_messages | default([]) }}"
+      software_update_groups: "{{ _software_update_group_info.software_update_groups | default([]) }}"
+      software_update_deployments: "{{ _software_update_deployment_info.software_update_deployments | default([]) }}"
+      backup_status: "{{ _backups_status_info.backup_status | default([]) }}"
+      distribution_points: "{{ _dp_status_info.distribution_points | default([]) }}"
+      wsus_sync_status: "{{ _wsus_sync_status_info.wsus_sync_status | default([]) }}"
+
+- name: Calculate health metrics
+  ansible.builtin.set_fact:
+    health_metrics:
+      total_status_messages: "{{ health_check_analysis.site_status_messages | length }}"
+      total_update_groups: "{{ health_check_analysis.software_update_groups | length }}"
+      total_deployments: "{{ health_check_analysis.software_update_deployments | length }}"
+      total_distribution_points: "{{ health_check_analysis.distribution_points | length }}"
+      total_backup_entries: "{{ health_check_analysis.backup_status | length }}"
+      total_wsus_entries: "{{ health_check_analysis.wsus_sync_status | length }}"
+
+- name: Generate HTML health report
+  ansible.windows.win_template:
+    src: health_report.html.j2
+    dest: "{{ health_check_report_output_directory }}/{{ health_check_report_filename }}"
+  vars:
+    report_title: "{{ health_check_report_name }}"
+    report_data: "{{ health_check_analysis }}"
+    metrics: "{{ health_metrics }}"
+  when: health_check_report_save_file or health_check_report_send_email
+
+- name: Send email
+  ansible.builtin.include_tasks: email.yml
+  register: _email_result
+  when: health_check_report_send_email
+
+- name: Set health check report facts
+  ansible.builtin.set_fact:
+    health_check_report_present_facts:
+      report_path: "{{ health_check_report_output_directory }}/{{ health_check_report_filename }}"
+      report_name: "{{ health_check_report_name }}"
+      site_code: "{{ health_check_report_site_code }}"
+      timestamp: "{{ ansible_facts['date_time']['iso8601'] }}"
+      metrics: "{{ health_metrics }}"
+      email_sent: "{{ (_email_result is defined and not (_email_result.failed | default(false))) | default(false) }}"
+      file_saved: "{{ health_check_report_save_file }}"
+
+- name: Remove site PS drive
+  microsoft.mecm.site_ps_drive:
+    site_code: "{{ health_check_report_site_code }}"
+    state: absent
+  when: health_check_report_remove_site_ps_drive
