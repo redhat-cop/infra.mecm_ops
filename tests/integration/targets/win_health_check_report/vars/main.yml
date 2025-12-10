@@ -1,0 +1,4 @@
+---
+test_health_check_report_name: "{{ unique_test_id }}-health-check-report"
+test_health_check_report_filename: "{{ unique_test_id }}-health-report.html"
+test_output_directory: "{{ ansible_env.TEMP }}\\health_check_test"
