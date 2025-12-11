@@ -1,0 +1,76 @@
+---
+- name: Setup a site PS drive
+  microsoft.mecm.site_ps_drive:
+    site_code: "{{ emergency_patch_site_code }}"
+    state: present
+
+- name: Lookup software updates by KB
+  when: emergency_patch_software_update_kbs is defined
+  block:
+    - name: Gather software update info
+      microsoft.mecm.software_update_info:
+        site_code: "{{ emergency_patch_site_code }}"
+        article_ids: "{{ emergency_patch_software_update_article_ids }}"
+      register: _emergency_patch_su_info
+    - name: Parse update ids
+      ansible.builtin.set_fact:
+        emergency_patch_software_update_ids: >-
+          {{ emergency_patch_software_update_kbs.software_updates | map(attribute=id) }}
+    - name: Make sure software update ids were found
+      ansible.builtin.assert:
+        that:
+          - emergency_patch_software_update_ids | length > 0
+        fail_msg: "No software update ids found for the given article ids"
+
+- name: Create software update group
+  microsoft.mecm.software_update_group:
+    site_code: "{{ emergency_patch_site_code }}"
+    name: "{{ emergency_patch_software_update_group_name }}"
+    description: "{{ emergency_patch_software_update_group_description | default(omit) }}"
+    software_update_ids: "{{ emergency_patch_software_update_ids }}"
+  register: _emergency_patch_create_sug
+
+- name: Create software deployment
+  microsoft.mecm.software_update_deployment:
+    site_code: "{{ emergency_patch_site_code }}"
+    state: present
+    software_update_group_id: "{{ _emergency_patch_create_sug.software_update_group.id }}"
+    collection_name: "{{ emergency_patch_collection_name | default(omit) }}"
+    collection_id: "{{ emergency_patch_collection_id | default(omit) }}"
+    name: "{{ emergency_patch_deployment_name }}"
+    available_time: "{{ ansible_facts['date_time']['iso8601'] }}"
+    deadline_time: "{{ ansible_facts['date_time']['iso8601'] }}"
+    deployment_type: required
+    require_post_reboot_full_scan: true
+    enable_soft_deadline: "{{ emergency_patch_deployment_enable_soft_deadline | default(false) }}"
+    allow_installation_outside_maintenance_window: "{{ emergency_patch_deployment_allow_installation_outside_maintenance_window | default(true) }}"
+    enabled: true
+    # optional params
+    description: "{{ emergency_patch_deployment_description | default(omit) }}"
+    allow_restarts: "{{ emergency_patch_deployment_allow_restarts | default(omit) }}"
+    allow_metered_network_downloads: "{{ emergency_patch_deployment_allow_metered_network_downloads | default(omit) }}"
+    allow_remote_distribution_point_downloads: "{{ emergency_patch_deployment_allow_remote_distribution_point_downloads | default(omit) }}"
+    allow_default_distribution_point_downloads: "{{ emergency_patch_deployment_allow_default_distribution_point_downloads | default(omit) }}"
+    disable_operations_manager_alerts: "{{ emergency_patch_deployment_disable_operations_manager_alerts | default(omit) }}"
+    generate_operations_manager_alert_on_failure: "{{ emergency_patch_deployment_generate_operations_manager_alert_on_failure | default(omit) }}"
+    generate_success_threshold_alert: "{{ emergency_patch_deployment_generate_success_threshold_alert | default(omit) }}"
+    success_threshold: "{{ emergency_patch_deployment_success_threshold | default(omit) }}"
+    allow_microsoft_update_downloads: "{{ emergency_patch_deployment_allow_microsoft_update_downloads | default(omit) }}"
+    allow_branch_cache_downloads: "{{ emergency_patch_deployment_allow_branch_cache_downloads | default(omit) }}"
+    restart_servers_if_needed: "{{ emergency_patch_deployment_restart_servers_if_needed | default(omit) }}"
+    restart_workstations_if_needed: "{{ emergency_patch_deployment_restart_workstations_if_needed | default(omit) }}"
+    send_wake_up_packet: "{{ emergency_patch_deployment_send_wake_up_packet | default(omit) }}"
+    deployment_timezone: "{{ emergency_patch_deployment_deployment_timezone | default(omit) }}"
+    user_notification_method: "{{ emergency_patch_deployment_user_notification_method | default(omit) }}"
+    deployment_verbosity: "{{ emergency_patch_deployment_verbosity | default(omit) }}"
+    distribute_content: "{{ emergency_patch_deployment_distribute_content | default(omit) }}"
+    distribution_collection_name: "{{ emergency_patch_deployment_distribution_collection_name | default(omit) }}"
+    distribution_point_group_name: "{{ emergency_patch_deployment_distribution_point_group_name | default(omit) }}"
+    distribution_point_name: "{{ emergency_patch_deployment_distribution_point_name | default(omit) }}"
+  register: _emergency_patch_create_deployment
+
+- name: Set identifiers in emergency_patch_present_facts variable
+  ansible.builtin.set_fact:
+    emergency_patch_present_facts:
+      software_update_group_id: "{{ _emergency_patch_create_sug.software_update_group.id }}"
+      software_update_deployment_id: "{{ _emergency_patch_create_deployment.software_update_deployment.id }}"

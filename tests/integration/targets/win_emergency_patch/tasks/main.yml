@@ -1,0 +1,67 @@
+---
+- name: Test and cleanup
+  vars:
+    emergency_patch_site_code: "{{ test_site_code }}"
+    emergency_patch_software_update_ids: "{{ test_update_ids }}"
+    emergency_patch_software_update_group_name: "{{ test_software_update_group_name }}"
+    emergency_patch_deployment_name: "{{ test_software_deployment_name }}"
+    emergency_patch_collection_name: "{{ test_collection_name }}"
+    emergency_patch_remove_site_ps_drive: false
+
+  block:
+    - name: Include emergency patch role
+      ansible.builtin.include_role:
+        name: infra.mecm_ops.emergency_patch
+      vars:
+        emergency_patch_state: present
+
+    - name: Lookup update group
+      microsoft.mecm.software_update_group_info:
+        site_code: "{{ test_site_code }}"
+        name: "{{ test_software_update_group_name }}"
+      register: _get_sug_by_info
+
+    - name: Lookup deployment
+      microsoft.mecm.software_update_deployment_info:
+        site_code: "{{ test_site_code }}"
+        id: "{{ emergency_patch_present_facts.software_update_deployment_id }}"
+      register: _get_deployment_info
+
+    - name: Assert
+      ansible.builtin.assert:
+        that:
+          - _get_sug_by_info.software_update_groups | length == 1
+          - _get_deployment_info.software_update_deployments | length == 1
+          - emergency_patch_present_facts.software_update_group_id == _get_sug_by_info.software_update_groups[0].id
+          - emergency_patch_present_facts.software_update_deployment_id == _get_deployment_info.software_update_deployments[0].id
+
+    - name: Cleanup
+      ansible.builtin.include_role:
+        name: infra.mecm_ops.emergency_patch
+      vars:
+        emergency_patch_state: absent
+
+    - name: Lookup update group
+      microsoft.mecm.software_update_group_info:
+        site_code: "{{ test_site_code }}"
+        name: "{{ test_software_update_group_name }}"
+      register: _get_sug_by_info
+
+    - name: Lookup deployment
+      microsoft.mecm.software_update_deployment_info:
+        site_code: "{{ test_site_code }}"
+        id: "{{ emergency_patch_present_facts.software_update_deployment_id }}"
+      register: _get_deployment_info
+
+    - name: Assert
+      ansible.builtin.assert:
+        that:
+          - _get_sug_by_info.software_update_groups | length == 0
+          - _get_deployment_info.software_update_deployments | length == 0
+
+  rescue:
+    - name: Cleanup update group and deployment
+      microsoft.mecm.software_update_group:
+        site_code: "{{ test_site_code }}"
+        name: "{{ test_software_update_group_name }}"
+        state: absent

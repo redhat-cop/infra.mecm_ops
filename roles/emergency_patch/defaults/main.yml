@@ -1,0 +1,4 @@
+---
+emergency_patch_software_update_group_name: Emergency Patch {{ ansible_facts['date_time']['iso8601'] }}
+emergency_patch_deployment_name: Emergency Patch Deployment {{ ansible_facts['date_time']['iso8601'] }}
+emergency_patch_state: present
