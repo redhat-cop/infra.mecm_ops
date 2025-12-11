@@ -20,6 +20,10 @@ sanity: upgrade-collections
 	cd $(ANSIBLE_COLLECTIONS_PATH)/ansible_collections/infra/mecm_ops; \
 	ansible-test sanity -v --color --coverage --junit --docker default
 
+.PHONY: lint
+lint: upgrade-collections
+	ansible-lint . ;
+
 .PHONY: integration
 integration: tests/integration/inventory.winrm install-integration-reqs upgrade-collections
 	cp tests/integration/inventory.winrm $(ANSIBLE_COLLECTIONS_PATH)/ansible_collections/infra/mecm_ops/tests/integration/inventory.winrm; \
