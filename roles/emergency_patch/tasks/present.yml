@@ -11,7 +11,7 @@
       microsoft.mecm.software_update_info:
         site_code: "{{ emergency_patch_site_code }}"
         article_ids: "{{ emergency_patch_software_update_article_ids }}"
-      register: _su_info
+      register: _emergency_patch_su_info
     - name: Parse update ids
       ansible.builtin.set_fact:
         emergency_patch_software_update_ids: >-
@@ -28,13 +28,13 @@
     name: "{{ emergency_patch_software_update_group_name }}"
     description: "{{ emergency_patch_software_update_group_description | default(omit) }}"
     software_update_ids: "{{ emergency_patch_software_update_ids }}"
-  register: _create_sug
+  register: _emergency_patch_create_sug
 
 - name: Create software deployment
   microsoft.mecm.software_update_deployment:
     site_code: "{{ emergency_patch_site_code }}"
     state: present
-    software_update_group_id: "{{ _create_sug.software_update_group.id }}"
+    software_update_group_id: "{{ _emergency_patch_create_sug.software_update_group.id }}"
     collection_name: "{{ emergency_patch_collection_name | default(omit) }}"
     collection_id: "{{ emergency_patch_collection_id | default(omit) }}"
     name: "{{ emergency_patch_deployment_name }}"
@@ -67,10 +67,10 @@
     distribution_collection_name: "{{ emergency_patch_deployment_distribution_collection_name | default(omit) }}"
     distribution_point_group_name: "{{ emergency_patch_deployment_distribution_point_group_name | default(omit) }}"
     distribution_point_name: "{{ emergency_patch_deployment_distribution_point_name | default(omit) }}"
-  register: _create_deployment
+  register: _emergency_patch_create_deployment
 
 - name: Set identifiers in emergency_patch_present_facts variable
   ansible.builtin.set_fact:
     emergency_patch_present_facts:
-      software_update_group_id: "{{ _create_sug.software_update_group.id }}"
-      software_update_deployment_id: "{{ _create_deployment.software_update_deployment.id }}"
+      software_update_group_id: "{{ _emergency_patch_create_sug.software_update_group.id }}"
+      software_update_deployment_id: "{{ _emergency_patch_create_deployment.software_update_deployment.id }}"

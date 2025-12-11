@@ -4,7 +4,7 @@
   gather_facts: false
 
   roles:
-    - role: infra.mecm.emergency_patch
+    - role: infra.mecm_ops.emergency_patch
 
 
 - name: Install and wait for patch to complete
@@ -24,5 +24,5 @@
   gather_facts: false
 
   roles:
-    - role: infra.mecm.emergency_patch
+    - role: infra.mecm_ops.emergency_patch
       emergency_patch_state: absent
