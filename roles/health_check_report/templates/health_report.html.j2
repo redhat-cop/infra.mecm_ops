@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ report_title }}</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f5f5f5; }
+        .container { max-width: 1200px; margin: 0 auto; background-color: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .header { border-bottom: 3px solid #dc3545; margin-bottom: 20px; padding-bottom: 15px; }
+        .header h1 { color: #dc3545; margin: 0; }
+        .header .meta { color: #666; margin-top: 10px; }
+        .metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px; }
+        .metric-card { padding: 15px; border-left: 4px solid #3895D3; background-color: #f8f9fa; }
+        .metric-card h3 { margin: 0 0 5px 0; font-size: 2em; color: #3895D3; }
+        .metric-card p { margin: 0; color: #666; text-transform: uppercase; font-size: 0.9em; letter-spacing: 0.5px; }
+        .section { margin-bottom: 30px; }
+        .section h2 { color: #333; border-bottom: 2px solid #e0e0e0; padding-bottom: 8px; }
+        .data-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        .data-table th, .data-table td { padding: 8px 12px; text-align: left; border-bottom: 1px solid #ddd; font-size: 0.9em; }
+        .data-table th { background-color: #f8f9fa; color: #dc3545; font-weight: bold; }
+        .data-table tr:hover { background-color: #f8f9fa; }
+        .data-table tr:nth-child(even) { background-color: #fafafa; }
+        .status-ok { color: #28a745; font-weight: bold; }
+        .status-warning { color: #ffc107; font-weight: bold; }
+        .status-error { color: #dc3545; font-weight: bold; }
+        .no-data { color: #666; font-style: italic; padding: 20px; text-align: center; background-color: #f8f9fa; border-radius: 4px; }
+        .footer { margin-top: 30px; padding-top: 15px; border-top: 1px solid #e0e0e0; text-align: center; color: #666; font-size: 0.9em; }
+        .summary { background-color: #e7f3ff; padding: 10px; border-radius: 4px; margin-bottom: 15px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>{{ report_title }}</h1>
+            <div class="meta">
+                <strong>Site Code:</strong> {{ report_data.site_code }}<br>
+                <strong>Generated:</strong> {{ report_data.timestamp }}<br>
+            </div>
+        </div>
+
+        <div class="metrics">
+            <div class="metric-card">
+                <h3>{{ metrics.total_status_messages }}</h3>
+                <p>Status Messages</p>
+            </div>
+            <div class="metric-card">
+                <h3>{{ metrics.total_update_groups }}</h3>
+                <p>Update Groups</p>
+            </div>
+            <div class="metric-card">
+                <h3>{{ metrics.total_deployments }}</h3>
+                <p>Deployments</p>
+            </div>
+            <div class="metric-card">
+                <h3>{{ metrics.total_distribution_points }}</h3>
+                <p>Distribution Points</p>
+            </div>
+            <div class="metric-card">
+                <h3>{{ metrics.total_backup_entries }}</h3>
+                <p>Backup Entries</p>
+            </div>
+            <div class="metric-card">
+                <h3>{{ metrics.total_wsus_entries }}</h3>
+                <p>WSUS Sync Entries</p>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Site Status Messages</h2>
+            <div class="summary">
+                <strong>Total Entries:</strong> {{ report_data.site_status_messages | length }}
+            </div>
+            {% if report_data.site_status_messages | length > 0 %}
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Component</th>
+                        <th>Severity</th>
+                        <th>Message</th>
+                        <th>Time</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for message in report_data.site_status_messages %}
+                    {% if loop.index <= 15 %}
+                    <tr>
+                        <td>{{ message.Component | default(message.component | default('N/A')) }}</td>
+                        <td>
+                            {% set severity = message.Severity | default(message.severity | default('Unknown')) %}
+                            <span class="{% if severity == 'Error' %}status-error{% elif severity == 'Warning' %}status-warning{% else %}status-ok{% endif %}">{{ severity }}</span>
+                        </td>
+                        <td>{{ message.MessageText | default(message.message_text | default(message.Message | default('No message'))) }}</td>
+                        <td>{{ message.Time | default(message.time | default(message.Timestamp | default('N/A'))) }}</td>
+                    </tr>
+                    {% endif %}
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% if report_data.site_status_messages | length > 15 %}
+            <p><em>Showing first 15 of {{ report_data.site_status_messages | length }} status messages.</em></p>
+            {% endif %}
+            {% else %}
+            <div class="no-data">No site status messages available.</div>
+            {% endif %}
+        </div>
+
+        <div class="section">
+            <h2>Software Update Groups</h2>
+            <div class="summary">
+                <strong>Total Entries:</strong> {{ report_data.software_update_groups | length }}
+            </div>
+            {% if report_data.software_update_groups | length > 0 %}
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Group Name</th>
+                        <th>Description</th>
+                        <th>Update Count</th>
+                        <th>Last Modified</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for group in report_data.software_update_groups %}
+                    {% if loop.index <= 12 %}
+                    <tr>
+                        <td>{{ group.Name | default(group.name | default('N/A')) }}</td>
+                        <td>{{ group.Description | default(group.description | default('No description')) }}</td>
+                        <td>{{ group.NumberOfUpdates | default(group.update_count | default(group.UpdateCount | default('0'))) }}</td>
+                        <td>{{ group.DateLastModified | default(group.last_modified | default(group.LastModified | default('N/A'))) }}</td>
+                    </tr>
+                    {% endif %}
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% if report_data.software_update_groups | length > 12 %}
+            <p><em>Showing first 12 of {{ report_data.software_update_groups | length }} update groups.</em></p>
+            {% endif %}
+            {% else %}
+            <div class="no-data">No software update groups found.</div>
+            {% endif %}
+        </div>
+
+        <div class="section">
+            <h2>Software Update Deployments</h2>
+            <div class="summary">
+                <strong>Total Entries:</strong> {{ report_data.software_update_deployments | length }}
+            </div>
+            {% if report_data.software_update_deployments | length > 0 %}
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Deployment Name</th>
+                        <th>Collection</th>
+                        <th>State</th>
+                        <th>Deadline</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for deployment in report_data.software_update_deployments %}
+                    {% if loop.index <= 12 %}
+                    <tr>
+                        <td>{{ deployment.AssignmentName | default(deployment.Name | default(deployment.name | default('N/A'))) }}</td>
+                        <td>{{ deployment.TargetCollectionName | default(deployment.CollectionName | default(deployment.collection_name | default('N/A'))) }}</td>
+                        <td>
+                            {% set state = deployment.AssignmentState | default(deployment.State | default(deployment.deployment_state | default('Unknown'))) %}
+                            <span class="{% if state == 'Active' or state == 'Completed' %}status-ok{% elif state == 'Failed' %}status-error{% else %}status-warning{% endif %}">{{ state }}</span>
+                        </td>
+                        <td>{{ deployment.EnforcementDeadline | default(deployment.Deadline | default(deployment.deadline | default('N/A'))) }}</td>
+                    </tr>
+                    {% endif %}
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% if report_data.software_update_deployments | length > 12 %}
+            <p><em>Showing first 12 of {{ report_data.software_update_deployments | length }} deployments.</em></p>
+            {% endif %}
+            {% else %}
+            <div class="no-data">No software update deployments found.</div>
+            {% endif %}
+        </div>
+
+        <div class="section">
+            <h2>Backup Status</h2>
+            <div class="summary">
+                <strong>Total Entries:</strong> {{ report_data.backup_status | length }}
+            </div>
+            {% if report_data.backup_status | length > 0 %}
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Backup Task</th>
+                        <th>Status</th>
+                        <th>Last Run</th>
+                        <th>Next Run</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for backup in report_data.backup_status %}
+                    {% if loop.index <= 10 %}
+                    <tr>
+                        <td>{{ backup.TaskName | default(backup.Name | default(backup.task_name | default('N/A'))) }}</td>
+                        <td>
+                            {% set status = backup.Status | default(backup.status | default(backup.State | default('Unknown'))) %}
+                            <span class="{% if status == 'Success' %}status-ok{% elif status == 'Warning' %}status-warning{% else %}status-error{% endif %}">{{ status }}</span>
+                        </td>
+                        <td>{{ backup.LastRunTime | default(backup.LastRun | default(backup.last_run | default('N/A'))) }}</td>
+                        <td>{{ backup.NextRunTime | default(backup.NextRun | default(backup.next_run | default('N/A'))) }}</td>
+                    </tr>
+                    {% endif %}
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% if report_data.backup_status | length > 10 %}
+            <p><em>Showing first 10 of {{ report_data.backup_status | length }} backup entries.</em></p>
+            {% endif %}
+            {% else %}
+            <div class="no-data">No backup status information found.</div>
+            {% endif %}
+        </div>
+
+        <div class="section">
+            <h2>Distribution Points</h2>
+            <div class="summary">
+                <strong>Total Entries:</strong> {{ report_data.distribution_points | length }}
+            </div>
+            {% if report_data.distribution_points | length > 0 %}
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Package Name</th>
+                        <th>Package ID</th>
+                        <th>Distribution Point</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for dp in report_data.distribution_points %}
+                    {% if loop.index <= 15 %}
+                    <tr>
+                        <td>{{ dp.SoftwareName | default(dp.PackageName | default(dp.Name | default('N/A'))) }}</td>
+                        <td>{{ dp.PackageID | default(dp.ID | default('N/A')) }}</td>
+                        <td>{{ dp.ServerNALPath | default(dp.ServerName | default(dp.DistributionPoint | default('N/A'))) }}</td>
+                        <td>
+                            {% set status = dp.State | default(dp.Status | default('Unknown')) %}
+                            <span class="{% if status == 'DISTRIBUTED' or status == 'Success' %}status-ok{% elif status == 'FAILED' or status == 'Failed' %}status-error{% else %}status-warning{% endif %}">{{ status }}</span>
+                        </td>
+                    </tr>
+                    {% endif %}
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% if report_data.distribution_points | length > 15 %}
+            <p><em>Showing first 15 of {{ report_data.distribution_points | length }} distribution point entries.</em></p>
+            {% endif %}
+            {% else %}
+            <div class="no-data">No distribution point information found.</div>
+            {% endif %}
+        </div>
+
+        <div class="section">
+            <h2>WSUS Sync Status</h2>
+            <div class="summary">
+                <strong>Total Entries:</strong> {{ report_data.wsus_sync_status | length }}
+            </div>
+            {% if report_data.wsus_sync_status | length > 0 %}
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Server Name</th>
+                        <th>Last Sync</th>
+                        <th>Sync Status</th>
+                        <th>Updates Count</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for wsus in report_data.wsus_sync_status %}
+                    <tr>
+                        <td>{{ wsus.ComputerName | default(wsus.ServerName | default(wsus.server_name | default('N/A'))) }}</td>
+                        <td>{{ wsus.LastSyncTime | default(wsus.LastSync | default(wsus.last_sync | default('N/A'))) }}</td>
+                        <td>
+                            {% set status = wsus.SyncStatus | default(wsus.Status | default(wsus.sync_status | default('Unknown'))) %}
+                            <span class="{% if status == 'Success' %}status-ok{% elif status == 'Failed' %}status-error{% else %}status-warning{% endif %}">{{ status }}</span>
+                        </td>
+                        <td>{{ wsus.NumberOfUpdates | default(wsus.UpdatesCount | default(wsus.updates_count | default('0'))) }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="no-data">No WSUS sync status information found.</div>
+            {% endif %}
+        </div>
+
+        <div class="footer">
+            <p>Generated by infra.mecm_ops.health_check_report role</p>
+            <p>Report Date: {{ report_data.timestamp }}</p>
+        </div>
+    </div>
+</body>
+</html>

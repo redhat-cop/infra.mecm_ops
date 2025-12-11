@@ -1,0 +1,26 @@
+---
+- name: Generate SCCM health check report
+  hosts: mecmserver
+  gather_facts: false
+  roles:
+    - role: infra.mecm_ops.health_check_report
+
+  tasks:
+    - name: Show health check report information
+      ansible.builtin.debug:
+        msg:
+          - "Health Check Report Generated Successfully"
+          - "Report Name: {{ health_check_report_present_facts.report_name }}"
+          - "Report Path: {{ health_check_report_present_facts.report_path }}"
+          - "Site Code: {{ health_check_report_present_facts.site_code }}"
+          - "Generated: {{ health_check_report_present_facts.timestamp }}"
+          - "Metrics:"
+          - "  - Status Messages: {{ health_check_report_present_facts.metrics.total_status_messages }}"
+          - "  - Update Groups: {{ health_check_report_present_facts.metrics.total_update_groups }}"
+          - "  - Deployments: {{ health_check_report_present_facts.metrics.total_deployments }}"
+          - "  - Distribution Points: {{ health_check_report_present_facts.metrics.total_distribution_points }}"
+          - "  - Backup Entries: {{ health_check_report_present_facts.metrics.total_backup_entries }}"
+          - "  - WSUS Sync Entries: {{ health_check_report_present_facts.metrics.total_wsus_entries }}"
+          - "Delivery:"
+          - "  - File Saved: {{ health_check_report_present_facts.file_saved }}"
+          - "  - Email Sent: {{ health_check_report_present_facts.email_sent }}"

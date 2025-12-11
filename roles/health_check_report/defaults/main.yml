@@ -1,0 +1,13 @@
+---
+health_check_report_name: SCCM Health Check Report {{ ansible_facts['date_time']['iso8601'] }}
+health_check_report_output_directory: "{{ ansible_env.TEMP | default('C:\\Windows\\Temp') }}"
+health_check_report_filename: "sccm_health_report_{{ ansible_facts['date_time']['date'] }}.html"
+health_check_report_state: present
+
+# Email delivery configuration
+health_check_report_send_email: false
+health_check_report_save_file: true
+
+# Email settings (only used when health_check_report_send_email is true)
+health_check_report_email_subject: "SCCM Health Check Report - {{ ansible_facts['date_time']['date'] }}"
+health_check_report_email_smtp_port: 25

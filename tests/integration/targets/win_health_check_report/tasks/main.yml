@@ -1,0 +1,71 @@
+---
+- name: Test health check report generation and cleanup
+  vars:
+    health_check_report_site_code: "{{ test_site_code }}"
+    health_check_report_name: "{{ test_health_check_report_name }}"
+    health_check_report_filename: "{{ test_health_check_report_filename }}"
+    health_check_report_output_directory: "{{ test_output_directory }}"
+    health_check_report_remove_site_ps_drive: false
+  block:
+    - name: Generate health check report
+      ansible.builtin.include_role:
+        name: infra.mecm_ops.health_check_report
+      vars:
+        health_check_report_state: present
+
+    - name: Verify report file was created
+      win_stat:
+        path: "{{ test_output_directory }}\\{{ test_health_check_report_filename }}"
+      register: _report_file_stat
+
+    - name: Assert report file exists
+      ansible.builtin.assert:
+        that:
+          - _report_file_stat.stat.exists
+          - _report_file_stat.stat.size > 0
+          - health_check_report_present_facts.report_path is defined
+          - health_check_report_present_facts.metrics is defined
+          - health_check_report_present_facts.site_code == test_site_code
+
+    - name: Verify report contains expected content
+      win_shell: |
+        Get-Content "{{ test_output_directory }}\\{{ test_health_check_report_filename }}" | Select-String "{{ test_health_check_report_name }}"
+      register: _report_content_check
+
+    - name: Assert report contains expected title
+      ansible.builtin.assert:
+        that:
+          - _report_content_check.stdout_lines | length > 0
+
+    - name: Test cleanup - remove report
+      ansible.builtin.include_role:
+        name: infra.mecm_ops.health_check_report
+      vars:
+        health_check_report_state: absent
+
+    - name: Verify report file was removed
+      win_stat:
+        path: "{{ test_output_directory }}\\{{ test_health_check_report_filename }}"
+      register: _report_file_stat_after_cleanup
+
+    - name: Assert report file was removed
+      ansible.builtin.assert:
+        that:
+          - not _report_file_stat_after_cleanup.stat.exists
+
+  rescue:
+    - name: Cleanup on test failure
+      win_file:
+        path: "{{ test_output_directory }}\\{{ test_health_check_report_filename }}"
+        state: absent
+      ignore_errors: true
+
+    - name: Remove test directory
+      win_file:
+        path: "{{ test_output_directory }}"
+        state: absent
+      ignore_errors: true
+
+    - name: Fail the test
+      ansible.builtin.fail:
+        msg: "Health check report integration test failed"

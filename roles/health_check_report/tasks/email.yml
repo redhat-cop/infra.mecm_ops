@@ -1,0 +1,19 @@
+---
+- name: Send email (if community.general available)
+  block:
+    - name: Send health check report via email
+      community.general.mail:
+        to: "{{ health_check_report_email_to }}"
+        from: "{{ health_check_report_email_from }}"
+        subject: "{{ health_check_report_email_subject | default('SCCM Health Check Report - ' + ansible_facts['date_time']['date']) }}"
+        body: "{{ _html_content.content | b64decode }}"
+        subtype: html
+        host: "{{ health_check_report_email_smtp_host }}"
+        port: "{{ health_check_report_email_smtp_port | default(25) }}"
+        username: "{{ health_check_report_email_username | default(omit) }}"
+        password: "{{ health_check_report_email_password | default(omit) }}"
+  rescue:
+    - name: Email sending failed
+      ansible.builtin.debug:
+        msg: "Warning: Email sending failed (community.general collection may not be available). Report was still generated to file."
+      failed_when: false
