@@ -22,7 +22,7 @@ sanity: upgrade-collections
 
 .PHONY: lint
 lint: upgrade-collections
-	ansible-lint . ;
+	ansible-lint
 
 .PHONY: integration
 integration: tests/integration/inventory.winrm install-integration-reqs upgrade-collections
