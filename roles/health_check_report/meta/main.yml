@@ -11,6 +11,6 @@ galaxy_info:
     - mecm
     - sccm
     - monitoring
-    - health_check
+    - healthcheck
     - reporting
 dependencies: []

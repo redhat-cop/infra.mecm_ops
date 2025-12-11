@@ -1,0 +1,12 @@
+---
+profile: production
+strict: true
+skip_list:
+  - ignore-errors # Use failed_when and specify error conditions instead of using ignore_errors.
+
+# https://ansible.readthedocs.io/projects/lint/configuring/#ansible-lint-configuration
+exclude_paths:
+  - changelogs/
+  - CHANGELOG.rst
+  - tests/
+  - scripts/

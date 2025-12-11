@@ -22,7 +22,7 @@
       - health_check_report_email_from is defined
       - health_check_report_email_smtp_host is defined
     msg: "Email variables must be defined when health_check_report_send_email is true"
-  when: 
+  when:
     - health_check_report_state == 'present'
     - health_check_report_send_email
 
