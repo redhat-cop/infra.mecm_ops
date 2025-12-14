@@ -1,0 +1,75 @@
+---
+- name: Initialize host operation tracking
+  ansible.builtin.set_fact:
+    patch_and_reboot_host_operation_start: "{{ ansible_facts['date_time']['iso8601'] }}"
+    patch_and_reboot_host_updates_installed: []
+    patch_and_reboot_host_reboot_required: false
+    patch_and_reboot_host_operation_status: "starting"
+
+- name: Execute MECM patching workflow
+  block:
+    - name: Install MECM deployed updates
+      microsoft.mecm.install_updates:
+        categories: "{{ patch_and_reboot_update_categories | default(omit) }}"
+        update_ids: "{{ patch_and_reboot_update_ids | default(omit) }}"
+        wait_for_completion: true
+        timeout_minutes: "{{ (patch_and_reboot_max_install_time | int / 60) | int }}"
+        allow_reboot: true
+        reboot_timeout_minutes: "{{ (patch_and_reboot_reboot_timeout | int / 60) | int }}"
+      register: patch_and_reboot_update_result
+      async: "{{ patch_and_reboot_max_install_time }}"
+      poll: 30
+
+    - name: Set host update tracking
+      ansible.builtin.set_fact:
+        patch_and_reboot_host_updates_installed: "{{ patch_and_reboot_update_result.installed_updates | default([]) }}"
+        patch_and_reboot_host_reboot_required: "{{ patch_and_reboot_update_result.reboot_required | default(false) }}"
+
+    - name: Validate post-patch system state
+      ansible.builtin.include_tasks: validate_host.yml
+      when: patch_and_reboot_validate_services or patch_and_reboot_validate_connectivity
+
+    - name: Mark host operation as successful
+      ansible.builtin.set_fact:
+        patch_and_reboot_host_operation_status: "successful"
+
+  rescue:
+    - name: Mark host operation as failed
+      ansible.builtin.set_fact:
+        patch_and_reboot_host_operation_status: "failed"
+        patch_and_reboot_host_operation_error: "{{ ansible_failed_result.msg | default('Unknown error occurred') }}"
+
+  always:
+    - name: Record host operation details
+      ansible.builtin.set_fact:
+        patch_and_reboot_host_operation_end: "{{ ansible_facts['date_time']['iso8601'] }}"
+
+    - name: Update operations tracking
+      ansible.builtin.set_fact:
+        patch_and_reboot_patch_operations_details: "{{ patch_and_reboot_patch_operations_details + [current_operation] }}"
+        patch_and_reboot_patch_operations_summary: "{{ patch_and_reboot_patch_operations_summary + [current_summary] }}"
+      vars:
+        current_operation:
+          hostname: "{{ inventory_hostname }}"
+          status: "{{ patch_and_reboot_host_operation_status }}"
+          start_time: "{{ patch_and_reboot_host_operation_start }}"
+          end_time: "{{ patch_and_reboot_host_operation_end }}"
+          updates_installed: "{{ patch_and_reboot_host_updates_installed | length }}"
+          reboot_required: "{{ patch_and_reboot_host_reboot_required }}"
+          error_message: "{{ patch_and_reboot_host_operation_error | default('') }}"
+          update_details: "{{ patch_and_reboot_host_updates_installed | default([]) }}"
+        current_summary:
+          hostname: "{{ inventory_hostname }}"
+          status: "{{ patch_and_reboot_host_operation_status }}"
+          updates_count: "{{ patch_and_reboot_host_updates_installed | length }}"
+          reboot_performed: "{{ patch_and_reboot_host_reboot_required }}"
+
+    - name: Update successful operations list
+      ansible.builtin.set_fact:
+        patch_and_reboot_patch_operations_successful: "{{ patch_and_reboot_patch_operations_successful + [inventory_hostname] }}"
+      when: patch_and_reboot_host_operation_status == "successful"
+
+    - name: Update failed operations list
+      ansible.builtin.set_fact:
+        patch_and_reboot_patch_operations_failed: "{{ patch_and_reboot_patch_operations_failed + [inventory_hostname] }}"
+      when: patch_and_reboot_host_operation_status == "failed"

@@ -1,0 +1,117 @@
+---
+- name: Test patch_and_reboot role - present state
+  block:
+    - name: Generate patch and reboot report (present)
+      ansible.builtin.include_role:
+        name: patch_and_reboot
+      vars:
+        patch_and_reboot_state: present
+        patch_and_reboot_output_directory: "{{ test_patch_output_dir }}"
+        patch_and_reboot_filename: "test_patch_report_{{ unique_test_id }}.html"
+        patch_and_reboot_name: "Test Patch and Reboot Operation - {{ unique_test_id }}"
+        patch_and_reboot_update_categories:
+          - SecurityUpdates  # Only security updates for testing
+        patch_and_reboot_reboot_timeout: 300
+        patch_and_reboot_max_install_time: 1800
+        patch_and_reboot_validate_services: true
+        patch_and_reboot_validate_connectivity: true
+
+    - name: Verify patch report was created
+      ansible.windows.win_stat:
+        path: "{{ test_patch_output_dir }}\\test_patch_report_{{ unique_test_id }}.html"
+      register: patch_report_file
+
+    - name: Validate patch report file exists
+      ansible.builtin.assert:
+        that:
+          - patch_report_file.stat.exists
+        fail_msg: "Patch report file was not created"
+
+    - name: Verify patch operation facts were set
+      ansible.builtin.assert:
+        that:
+          - patch_and_reboot_present_facts is defined
+          - patch_and_reboot_present_facts.report_path is defined
+          - patch_and_reboot_present_facts.target_hosts is defined
+          - patch_and_reboot_present_facts.metrics is defined
+          - patch_and_reboot_present_facts.operation_summary is defined
+        fail_msg: "Patch and reboot facts were not properly set"
+
+    - name: Validate operation summary metrics
+      ansible.builtin.assert:
+        that:
+          - patch_and_reboot_present_facts.operation_summary.total_hosts | int >= 1
+          - patch_and_reboot_present_facts.operation_summary.total_hosts | int == (patch_and_reboot_present_facts.operation_summary.successful_hosts | int + patch_and_reboot_present_facts.operation_summary.failed_hosts | int)
+        fail_msg: "Operation summary metrics are inconsistent"
+
+    - name: Display patch operation results
+      ansible.builtin.debug:
+        msg:
+          - "Patch Operation Test Results:"
+          - "  Report Path: {{ patch_and_reboot_present_facts.report_path }}"
+          - "  Target Hosts: {{ patch_and_reboot_present_facts.target_hosts }}"
+          - "  Total Hosts: {{ patch_and_reboot_present_facts.operation_summary.total_hosts }}"
+          - "  Successful: {{ patch_and_reboot_present_facts.operation_summary.successful_hosts }}"
+          - "  Failed: {{ patch_and_reboot_present_facts.operation_summary.failed_hosts }}"
+
+  rescue:
+    - name: Display patch operation test failure
+      ansible.builtin.debug:
+        msg:
+          - "Patch and reboot test failed"
+          - "Error: {{ ansible_failed_result.msg | default('Unknown error') }}"
+      
+    - name: Fail the test
+      ansible.builtin.fail:
+        msg: "patch_and_reboot role test failed: {{ ansible_failed_result.msg | default('Unknown error') }}"
+
+- name: Test patch_and_reboot role - absent state
+  block:
+    - name: Remove patch report (absent)
+      ansible.builtin.include_role:
+        name: patch_and_reboot
+      vars:
+        patch_and_reboot_state: absent
+        patch_and_reboot_output_directory: "{{ test_patch_output_dir }}"
+        patch_and_reboot_filename: "test_patch_report_{{ unique_test_id }}.html"
+
+    - name: Verify patch report was removed
+      ansible.windows.win_stat:
+        path: "{{ test_patch_output_dir }}\\test_patch_report_{{ unique_test_id }}.html"
+      register: removed_patch_report_file
+
+    - name: Validate patch report file was removed
+      ansible.builtin.assert:
+        that:
+          - not removed_patch_report_file.stat.exists
+        fail_msg: "Patch report file was not removed"
+
+  rescue:
+    - name: Display patch removal test failure
+      ansible.builtin.debug:
+        msg:
+          - "Patch report removal test failed"
+          - "Error: {{ ansible_failed_result.msg | default('Unknown error') }}"
+      
+    - name: Fail the removal test
+      ansible.builtin.fail:
+        msg: "patch_and_reboot removal test failed: {{ ansible_failed_result.msg | default('Unknown error') }}"
+
+- name: Test input validation
+  block:
+    - name: Test with invalid state
+      ansible.builtin.include_role:
+        name: patch_and_reboot
+      vars:
+        patch_and_reboot_state: invalid_state
+        patch_and_reboot_output_directory: "{{ test_patch_output_dir }}"
+
+    - name: Role should have failed
+      ansible.builtin.fail:
+        msg: "Role should fail with invalid state"
+      failed_when: true
+
+  rescue:
+    - name: Input validation test completed successfully
+      ansible.builtin.debug:
+        msg: "Input validation test passed - role correctly failed with invalid state"

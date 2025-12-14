@@ -14,7 +14,7 @@
         health_check_report_state: present
 
     - name: Verify report file was created
-      win_stat:
+      ansible.windows.win_stat:
         path: "{{ test_output_directory }}\\{{ test_health_check_report_filename }}"
       register: _report_file_stat
 
@@ -28,7 +28,7 @@
           - health_check_report_present_facts.site_code == test_site_code
 
     - name: Verify report contains expected content
-      win_shell: |
+      ansible.windows.win_shell: |
         Get-Content "{{ test_output_directory }}\\{{ test_health_check_report_filename }}" | Select-String "{{ test_health_check_report_name }}"
       register: _report_content_check
 
@@ -44,7 +44,7 @@
         health_check_report_state: absent
 
     - name: Verify report file was removed
-      win_stat:
+      ansible.windows.win_stat:
         path: "{{ test_output_directory }}\\{{ test_health_check_report_filename }}"
       register: _report_file_stat_after_cleanup
 
@@ -55,13 +55,13 @@
 
   rescue:
     - name: Cleanup on test failure
-      win_file:
+      ansible.windows.win_file:
         path: "{{ test_output_directory }}\\{{ test_health_check_report_filename }}"
         state: absent
       ignore_errors: true
 
     - name: Remove test directory
-      win_file:
+      ansible.windows.win_file:
         path: "{{ test_output_directory }}"
         state: absent
       ignore_errors: true

@@ -29,9 +29,10 @@ When the state is present, this role outputs a variable `health_check_report_pre
     - The computer name for WSUS sync status queries.
     - Defaults to `ansible_fqdn` (the fully qualified domain name of the target host).
 
-- **health_check_report_state** (str, required)
+- **health_check_report_state** (str, optional)
     - The state of the health check report. Either present or absent.
     - If present, the health report will be generated. If absent, the report file will be removed.
+    - Default is `present`.
 
 - **health_check_report_name** (str, optional)
     - The title/name of the health check report.
@@ -39,7 +40,7 @@ When the state is present, this role outputs a variable `health_check_report_pre
 
 - **health_check_report_output_directory** (str, optional)
     - The directory where the HTML report file will be generated.
-    - Defaults to the system temp directory (Windows: `%TEMP%`, Linux: `/tmp`).
+    - Defaults to the system temp directory (Windows: `%TEMP%`).
 
 - **health_check_report_filename** (str, optional)
     - The filename for the generated HTML report.
@@ -83,6 +84,10 @@ When the state is present, this role outputs a variable `health_check_report_pre
 
 - **health_check_report_email_password** (str, optional)
     - Password for SMTP authentication (if required).
+
+- **health_check_report_email_fail_on_error** (bool, optional)
+    - If true, role execution fails when email sending fails. If false, shows warning and continues.
+    - Defaults to `true`.
 
 ## Health Check Data Collected
 

@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ report_title }}</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f5f5f5; }
+        .container { max-width: 1200px; margin: 0 auto; background-color: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .header { border-bottom: 3px solid #3895D3; margin-bottom: 20px; padding-bottom: 15px; }
+        .header h1 { color: #000000; margin: 0; }
+        .header .meta { color: #666; margin-top: 10px; }
+        .metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px; }
+        .metric-card { padding: 15px; border-left: 4px solid #3895D3; background-color: #f8f9fa; }
+        .metric-card h3 { margin: 0 0 5px 0; font-size: 2em; color: #3895D3; }
+        .metric-card p { margin: 0; color: #666; text-transform: uppercase; font-size: 0.9em; letter-spacing: 0.5px; }
+        .section { margin-bottom: 30px; }
+        .section h2 { color: #333; border-bottom: 2px solid #e0e0e0; padding-bottom: 8px; }
+        .data-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        .data-table th, .data-table td { padding: 8px 12px; text-align: left; border-bottom: 1px solid #ddd; font-size: 0.9em; }
+        .data-table th { background-color: #f8f9fa; color: #dc3545; font-weight: bold; }
+        .data-table tr:hover { background-color: #f8f9fa; }
+        .data-table tr:nth-child(even) { background-color: #fafafa; }
+        .status-ok { color: #28a745; font-weight: bold; }
+        .status-warning { color: #ffc107; font-weight: bold; }
+        .status-error { color: #dc3545; font-weight: bold; }
+        .no-data { color: #666; font-style: italic; padding: 20px; text-align: center; background-color: #f8f9fa; border-radius: 4px; }
+        .footer { margin-top: 30px; padding-top: 15px; border-top: 1px solid #e0e0e0; text-align: center; color: #666; font-size: 0.9em; }
+        .summary { background-color: #e7f3ff; padding: 10px; border-radius: 4px; margin-bottom: 15px; }
+        .operation-summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin: 15px 0; }
+        .summary-item { text-align: center; padding: 10px; background-color: #f8f9fa; border-radius: 4px; }
+        .summary-item .number { font-size: 1.5em; font-weight: bold; color: #dc3545; }
+        .summary-item .label { font-size: 0.9em; color: #666; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>{{ report_title }}</h1>
+            <div class="meta">
+                <strong>Operation Time:</strong> {{ metrics.operation_start_time }} - {{ metrics.operation_end_time }}<br>
+                <strong>Generated:</strong> {{ report_data.timestamp }}<br>
+                <strong>Target Hosts:</strong> {{ metrics.total_hosts }}
+            </div>
+        </div>
+
+        <div class="metrics">
+            <div class="metric-card">
+                <h3>{{ metrics.total_hosts }}</h3>
+                <p>Total Hosts</p>
+            </div>
+            <div class="metric-card">
+                <h3>{{ metrics.successful_hosts }}</h3>
+                <p>Successful</p>
+            </div>
+            <div class="metric-card">
+                <h3>{{ metrics.failed_hosts }}</h3>
+                <p>Failed</p>
+            </div>
+            <div class="metric-card">
+                <h3>{{ metrics.total_operations }}</h3>
+                <p>Total Operations</p>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Operation Summary</h2>
+            <div class="summary">
+                <strong>Patch and Reboot Operation completed at {{ report_data.timestamp }}</strong>
+            </div>
+            {% if report_data.operations_summary | length > 0 %}
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Hostname</th>
+                        <th>Status</th>
+                        <th>Updates Installed</th>
+                        <th>Reboot Performed</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for operation in report_data.operations_summary %}
+                    <tr>
+                        <td>{{ operation.hostname }}</td>
+                        <td>
+                            <span class="{% if operation.status == 'successful' %}status-ok{% else %}status-error{% endif %}">{{ operation.status | title }}</span>
+                        </td>
+                        <td>{{ operation.updates_count }}</td>
+                        <td>
+                            <span class="{% if operation.reboot_performed %}status-warning{% else %}status-ok{% endif %}">{{ 'Yes' if operation.reboot_performed else 'No' }}</span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="no-data">No patch operations were performed.</div>
+            {% endif %}
+        </div>
+
+        {% if report_data.operations_details | length > 0 %}
+        <div class="section">
+            <h2>Detailed Operation Log</h2>
+            <div class="summary">
+                <strong>Complete details for all patching operations</strong>
+            </div>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Hostname</th>
+                        <th>Start Time</th>
+                        <th>End Time</th>
+                        <th>Status</th>
+                        <th>Updates</th>
+                        <th>Reboot Required</th>
+                        <th>Error</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for detail in report_data.operations_details %}
+                    <tr>
+                        <td>{{ detail.hostname }}</td>
+                        <td>{{ detail.start_time }}</td>
+                        <td>{{ detail.end_time }}</td>
+                        <td>
+                            <span class="{% if detail.status == 'successful' %}status-ok{% else %}status-error{% endif %}">{{ detail.status | title }}</span>
+                        </td>
+                        <td>{{ detail.updates_installed }}</td>
+                        <td>
+                            <span class="{% if detail.reboot_required %}status-warning{% else %}status-ok{% endif %}">{{ 'Yes' if detail.reboot_required else 'No' }}</span>
+                        </td>
+                        <td>{{ detail.error_message | default('') }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+
+        {% if report_data.failed_operations | length > 0 %}
+        <div class="section">
+            <h2>Failed Operations</h2>
+            <div class="summary">
+                <strong>Hosts that encountered errors during patching:</strong> {{ report_data.failed_operations | length }}
+            </div>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Hostname</th>
+                        <th>Error Details</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for failed_host in report_data.failed_operations %}
+                    <tr>
+                        <td>{{ failed_host }}</td>
+                        <td>
+                            {% set failed_detail = report_data.operations_details | selectattr('hostname', 'equalto', failed_host) | first %}
+                            {{ failed_detail.error_message | default('Unknown error occurred') }}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+
+        {% if report_data.successful_operations | length > 0 %}
+        <div class="section">
+            <h2>Successful Operations</h2>
+            <div class="summary">
+                <strong>Hosts that completed patching successfully:</strong> {{ report_data.successful_operations | length }}
+            </div>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Hostname</th>
+                        <th>Updates Installed</th>
+                        <th>Update Details</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for successful_host in report_data.successful_operations %}
+                    <tr>
+                        <td>{{ successful_host }}</td>
+                        <td>
+                            {% set successful_detail = report_data.operations_details | selectattr('hostname', 'equalto', successful_host) | first %}
+                            {{ successful_detail.updates_installed | default(0) }}
+                        </td>
+                        <td>
+                            {% set successful_detail = report_data.operations_details | selectattr('hostname', 'equalto', successful_host) | first %}
+                            {% if successful_detail.update_details | length > 0 %}
+                                {% for update in successful_detail.update_details[:3] %}
+                                {{ update.title | default('Unknown Update') }}{% if not loop.last %}, {% endif %}
+                                {% endfor %}
+                                {% if successful_detail.update_details | length > 3 %}
+                                <em>and {{ successful_detail.update_details | length - 3 }} more...</em>
+                                {% endif %}
+                            {% else %}
+                                No updates installed
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+
+        <div class="footer">
+            <p>Generated by infra.mecm_ops.patch_and_reboot role</p>
+            <p>Report Date: {{ report_data.timestamp }}</p>
+        </div>
+    </div>
+</body>
+</html>
