@@ -27,3 +27,7 @@ build_ignore:
   - tests/integration/inventory.winrm
   - CLAUDE.md
   - .claude*
+
+dependencies:
+  microsoft.mecm: ">=1.0.0"
+  ansible.windows: ">=1.0.0"
