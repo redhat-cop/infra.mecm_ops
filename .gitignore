@@ -2,9 +2,6 @@
 /changelogs/.plugin-cache.yaml
 .ansible/
 
-# Integration tests
-tests/integration/inventory.winrm
-
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

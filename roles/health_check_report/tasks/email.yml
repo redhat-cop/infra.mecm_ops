@@ -1,0 +1,35 @@
+---
+- name: Send email (if community.general available)
+  block:
+    - name: Read HTML content for email
+      ansible.builtin.slurp:
+        src: "{{ health_check_report_output_directory }}/{{ health_check_report_filename }}"
+      register: health_check_report_html_content
+
+    - name: Send health check report via email
+      community.general.mail:
+        to: "{{ health_check_report_email_to }}"
+        from: "{{ health_check_report_email_from }}"
+        subject: "{{ health_check_report_email_subject | default('SCCM Health Check Report - ' + ansible_facts['date_time']['date']) }}"
+        body: "{{ health_check_report_html_content.content | b64decode }}"
+        subtype: html
+        host: "{{ health_check_report_email_smtp_host }}"
+        port: "{{ health_check_report_email_smtp_port | default(25) }}"
+        username: "{{ health_check_report_email_username | default(omit) }}"
+        password: "{{ health_check_report_email_password | default(omit) }}"
+      delegate_to: localhost
+
+    - name: Clean up report file (when email only)
+      ansible.windows.win_file:
+        path: "{{ health_check_report_output_directory }}/{{ health_check_report_filename }}"
+        state: absent
+      when: not health_check_report_save_file
+  rescue:
+    - name: Handle email sending failure
+      ansible.builtin.fail:
+        msg: "Email sending failed: {{ ansible_failed_result.msg | default('Unknown email error') }}"
+      when: health_check_report_email_fail_on_error
+    - name: Email sending failed (warning mode)
+      ansible.builtin.debug:
+        msg: "Warning: Email sending failed ({{ ansible_failed_result.msg | default('Unknown email error') }}). Report was still generated to file."
+      when: not health_check_report_email_fail_on_error
