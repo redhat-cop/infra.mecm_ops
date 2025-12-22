@@ -106,12 +106,17 @@
         patch_and_reboot_state: invalid_state
         patch_and_reboot_output_directory: "{{ test_patch_output_dir }}"
 
-    - name: Role should have failed
-      ansible.builtin.fail:
-        msg: "Role should fail with invalid state"
-      failed_when: true
+    - name: Set failure flag
+      ansible.builtin.set_fact:
+        role_did_not_fail: True
 
   rescue:
-    - name: Input validation test completed successfully
+    - name: Silence role error
       ansible.builtin.debug:
         msg: "Input validation test passed - role correctly failed with invalid state"
+
+  always:
+    - name: Check role failed as expected
+      ansible.builtin.assert:
+        that:
+          - role_did_not_fail is not defined

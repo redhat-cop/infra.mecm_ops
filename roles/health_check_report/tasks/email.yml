@@ -24,13 +24,11 @@
         path: "{{ health_check_report_output_directory }}/{{ health_check_report_filename }}"
         state: absent
       when: not health_check_report_save_file
-
   rescue:
     - name: Handle email sending failure
       ansible.builtin.fail:
         msg: "Email sending failed: {{ ansible_failed_result.msg | default('Unknown email error') }}"
       when: health_check_report_email_fail_on_error
-
     - name: Email sending failed (warning mode)
       ansible.builtin.debug:
         msg: "Warning: Email sending failed ({{ ansible_failed_result.msg | default('Unknown email error') }}). Report was still generated to file."

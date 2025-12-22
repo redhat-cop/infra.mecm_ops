@@ -77,7 +77,6 @@
   register: health_check_report_email_result
   when: health_check_report_send_email
 
-
 - name: Set health check report facts
   ansible.builtin.set_fact:
     health_check_report_present_facts:
