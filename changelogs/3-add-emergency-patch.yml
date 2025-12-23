@@ -1,3 +1,0 @@
----
-minor_changes:
-  - emergency_patch - Add role to create or delete temporary resources for an emergency patch deployment

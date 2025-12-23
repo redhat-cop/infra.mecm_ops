@@ -1,3 +1,18 @@
 ---
 ancestor: null
-releases: {}
+releases:
+  1.0.0:
+    changes:
+      minor_changes:
+        - emergency_patch - Add role to create or delete temporary resources for an
+          emergency patch deployment
+        - health_check_report - Add role to generate comprehensive SCCM infrastructure
+          health check reports with monitoring data and metrics
+        - patch_and_reboot - Add role to orchestrate end-to-end Windows patching and
+          reboot operations with comprehensive maintenance reporting across multiple
+          target hosts
+    fragments:
+      - 3-add-emergency-patch.yml
+      - 4-add-health-check-report.yml
+      - 5-add-patch-and-reboot.yml
+    release_date: '2025-12-23'
