@@ -1,0 +1,50 @@
+---
+- name: Validate host connectivity after patching
+  ansible.builtin.wait_for_connection:
+    timeout: "{{ patch_and_reboot_validation_timeout }}"
+  when: patch_and_reboot_validate_connectivity
+
+- name: Gather post-patch system information
+  ansible.builtin.setup:
+  register: patch_and_reboot_post_patch_facts
+  when: patch_and_reboot_validate_services
+
+- name: Validate critical Windows services are running
+  ansible.windows.win_service_info:
+    name: "{{ item }}"
+  register: patch_and_reboot_service_status
+  loop:
+    - "Winmgmt"  # Windows Management Instrumentation
+    - "RpcSs"    # Remote Procedure Call (RPC)
+    - "Eventlog" # Windows Event Log
+    - "CcmExec"  # SCCM Client
+  when: patch_and_reboot_validate_services
+
+- name: Check for pending reboot status
+  ansible.windows.win_powershell:
+    script: |
+      $PendingReboot = $false
+
+      # Check for Component Based Servicing pending reboot
+      if (Get-ChildItem "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Component Based Servicing\RebootPending" -EA Ignore) { $PendingReboot = $true }
+
+      # Check for Windows Update pending reboot
+      if (Get-Item "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Auto Update\RebootRequired" -EA Ignore) { $PendingReboot = $true }
+
+      # Check for pending file rename operations
+      if (Get-ItemProperty "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager" -Name PendingFileRenameOperations -EA Ignore) { $PendingReboot = $true }
+
+      return $PendingReboot
+  register: patch_and_reboot_pending_reboot_check
+  when: patch_and_reboot_validate_services
+
+- name: Set validation results
+  ansible.builtin.set_fact:
+    patch_and_reboot_host_validation_results:
+      connectivity_ok: true
+      services_running: >-
+        {{ patch_and_reboot_service_status is defined and
+           patch_and_reboot_service_status.results | length == 4 and
+           patch_and_reboot_service_status.results | selectattr('item', 'in', ['Winmgmt', 'RpcSs', 'Eventlog', 'CcmExec']) | list | length == 4
+           if patch_and_reboot_validate_services else true }}
+      pending_reboot: "{{ patch_and_reboot_pending_reboot_check.output[0] | bool if patch_and_reboot_validate_services else false }}"

@@ -1,0 +1,29 @@
+---
+patch_and_reboot_name: "Windows Patch and Reboot Operation {{ ansible_facts['date_time']['iso8601'] }}"
+patch_and_reboot_output_directory: "{{ ansible_env.TEMP | default('C:\\Windows\\Temp') }}"
+patch_and_reboot_filename: "patch_maintenance_report_{{ ansible_facts['date_time']['date'] }}.html"
+patch_and_reboot_state: present
+
+# MECM patching configuration
+# Categories to filter update installations (optional)
+patch_and_reboot_update_categories:
+  - Security
+  - Critical
+# Specific update IDs or KB numbers to install (optional)
+patch_and_reboot_update_ids: []
+patch_and_reboot_reboot_timeout: 600
+patch_and_reboot_post_reboot_delay: 60
+patch_and_reboot_max_install_time: 3600
+
+# Validation configuration
+patch_and_reboot_validate_services: true
+patch_and_reboot_validate_connectivity: true
+patch_and_reboot_validation_timeout: 300
+
+# Report and email configuration
+patch_and_reboot_save_file: true
+patch_and_reboot_send_email: false
+
+# Email settings (only used when patch_and_reboot_send_email is true)
+patch_and_reboot_email_subject: "Windows Patch and Reboot Report - {{ ansible_facts['date_time']['date'] }}"
+patch_and_reboot_email_smtp_port: 25

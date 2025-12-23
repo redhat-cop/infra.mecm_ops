@@ -1,0 +1,16 @@
+---
+galaxy_info:
+  author: Ansible Cloud Content Team (@redhat-cop)
+  description: Orchestrate end-to-end Windows patching and reboot operations with comprehensive reporting
+  company: Red Hat, Inc.
+  license: GPL-3.0-or-later
+  min_ansible_version: "2.16"
+  galaxy_tags:
+    - infrastructure
+    - windows
+    - patching
+    - maintenance
+    - updates
+    - reboot
+    - reporting
+dependencies: []

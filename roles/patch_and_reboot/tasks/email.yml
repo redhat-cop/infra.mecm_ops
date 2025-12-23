@@ -1,0 +1,47 @@
+---
+- name: Generate HTML content for email
+  ansible.windows.win_template:
+    src: patch_report.html.j2
+    dest: "{{ patch_and_reboot_output_directory }}/{{ patch_and_reboot_filename }}"
+  vars:
+    report_title: "{{ patch_and_reboot_name }}"
+    report_data:
+      timestamp: "{{ ansible_facts['date_time']['iso8601'] }}"
+      target_hosts: ["{{ inventory_hostname }}"]
+      operations_summary: "{{ patch_and_reboot_patch_operations_summary }}"
+      operations_details: "{{ patch_and_reboot_patch_operations_details }}"
+      successful_operations: "{{ patch_and_reboot_patch_operations_successful }}"
+      failed_operations: "{{ patch_and_reboot_patch_operations_failed }}"
+    metrics: "{{ patch_and_reboot_patch_metrics }}"
+  register: patch_and_reboot_email_content_file
+
+- name: Read HTML content for email
+  ansible.builtin.slurp:
+    src: "{{ patch_and_reboot_output_directory }}\\{{ patch_and_reboot_filename }}"
+  register: patch_and_reboot_html_content
+
+- name: Send email (if community.general available)
+  block:
+    - name: Send patch and reboot report via email
+      community.general.mail:
+        to: "{{ patch_and_reboot_email_to }}"
+        from: "{{ patch_and_reboot_email_from }}"
+        subject: "{{ patch_and_reboot_email_subject | default('Windows Patch and Reboot Report - ' + ansible_facts['date_time']['date']) }}"
+        body: "{{ patch_and_reboot_html_content.content | b64decode }}"
+        subtype: html
+        host: "{{ patch_and_reboot_email_smtp_host }}"
+        port: "{{ patch_and_reboot_email_smtp_port | default(25) }}"
+        username: "{{ patch_and_reboot_email_username | default(omit) }}"
+        password: "{{ patch_and_reboot_email_password | default(omit) }}"
+      delegate_to: localhost
+
+    - name: Clean up temporary email file
+      ansible.windows.win_file:
+        path: "{{ patch_and_reboot_output_directory }}/{{ patch_and_reboot_filename }}"
+        state: absent
+      when: not patch_and_reboot_save_file
+  rescue:
+    - name: Email sending failed
+      ansible.builtin.debug:
+        msg: "Warning: Email sending failed (community.general collection may not be available). Report was still generated to file."
+      failed_when: false

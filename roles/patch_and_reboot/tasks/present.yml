@@ -1,0 +1,62 @@
+---
+- name: Create output directory
+  ansible.windows.win_file:
+    path: "{{ patch_and_reboot_output_directory }}"
+    state: directory
+
+- name: Initialize patch operation tracking
+  ansible.builtin.set_fact:
+    patch_and_reboot_patch_operation_start_time: "{{ ansible_facts['date_time']['iso8601'] }}"
+    patch_and_reboot_patch_operations_summary: []
+    patch_and_reboot_patch_operations_details: []
+    patch_and_reboot_patch_operations_failed: []
+    patch_and_reboot_patch_operations_successful: []
+
+- name: Execute MECM patching workflow on this host
+  ansible.builtin.include_tasks: patch_host.yml
+
+- name: Calculate operation metrics
+  ansible.builtin.set_fact:
+    patch_and_reboot_patch_metrics:
+      total_hosts: 1
+      successful_hosts: "{{ 1 if patch_and_reboot_patch_operations_successful | length > 0 else 0 }}"
+      failed_hosts: "{{ 1 if patch_and_reboot_patch_operations_failed | length > 0 else 0 }}"
+      total_operations: "{{ patch_and_reboot_patch_operations_details | length }}"
+      operation_start_time: "{{ patch_and_reboot_patch_operation_start_time }}"
+      operation_end_time: "{{ ansible_facts['date_time']['iso8601'] }}"
+
+- name: Generate maintenance report
+  ansible.windows.win_template:
+    src: patch_report.html.j2
+    dest: "{{ patch_and_reboot_output_directory }}/{{ patch_and_reboot_filename }}"
+  vars:
+    report_title: "{{ patch_and_reboot_name }}"
+    report_data:
+      timestamp: "{{ ansible_facts['date_time']['iso8601'] }}"
+      target_hosts: ["{{ inventory_hostname }}"]
+      operations_summary: "{{ patch_and_reboot_patch_operations_summary }}"
+      operations_details: "{{ patch_and_reboot_patch_operations_details }}"
+      successful_operations: "{{ patch_and_reboot_patch_operations_successful }}"
+      failed_operations: "{{ patch_and_reboot_patch_operations_failed }}"
+    metrics: "{{ patch_and_reboot_patch_metrics }}"
+  when: patch_and_reboot_save_file
+
+- name: Send email
+  ansible.builtin.include_tasks: email.yml
+  register: patch_and_reboot_email_result
+  when: patch_and_reboot_send_email
+
+- name: Set patch and reboot operation facts
+  ansible.builtin.set_fact:
+    patch_and_reboot_present_facts:
+      report_path: "{{ patch_and_reboot_output_directory }}/{{ patch_and_reboot_filename }}"
+      report_name: "{{ patch_and_reboot_name }}"
+      target_hosts: ["{{ inventory_hostname }}"]
+      timestamp: "{{ ansible_facts['date_time']['iso8601'] }}"
+      metrics: "{{ patch_and_reboot_patch_metrics }}"
+      email_sent: "{{ (patch_and_reboot_email_result is defined and not (patch_and_reboot_email_result.failed | default(false))) | default(false) }}"
+      file_saved: "{{ patch_and_reboot_save_file }}"
+      operation_summary:
+        total_hosts: "{{ patch_and_reboot_patch_metrics.total_hosts }}"
+        successful_hosts: "{{ patch_and_reboot_patch_metrics.successful_hosts }}"
+        failed_hosts: "{{ patch_and_reboot_patch_metrics.failed_hosts }}"

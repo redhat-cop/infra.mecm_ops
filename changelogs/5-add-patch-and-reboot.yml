@@ -1,0 +1,3 @@
+---
+minor_changes:
+  - patch_and_reboot - Add role to orchestrate end-to-end Windows patching and reboot operations with comprehensive maintenance reporting across multiple target hosts

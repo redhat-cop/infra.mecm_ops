@@ -1,0 +1,6 @@
+---
+- name: Remove patch and reboot report file
+  ansible.windows.win_file:
+    path: "{{ patch_and_reboot_output_directory }}/{{ patch_and_reboot_filename }}"
+    state: absent
+  when: patch_and_reboot_filename is defined
