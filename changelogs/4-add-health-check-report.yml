@@ -1,3 +1,0 @@
----
-minor_changes:
-  - health_check_report - Add role to generate comprehensive SCCM infrastructure health check reports with monitoring data and metrics

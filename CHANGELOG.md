@@ -1,5 +1,16 @@
-Will be updated by antsibull-changelog. Do not edit this manually!
+# CHANGE THIS IN changelogs/config\.yaml\! Release Notes
 
-See https://ansible.readthedocs.io/projects/antsibull-changelog/changelogs/ for information on how to use antsibull-changelog.
+**Topics**
 
-Check out `changelogs/config.yaml` for its configuration. You need to change at least the `title` field in there.
+- <a href="#v1-0-0">v1\.0\.0</a>
+    - <a href="#minor-changes">Minor Changes</a>
+
+<a id="v1-0-0"></a>
+## v1\.0\.0
+
+<a id="minor-changes"></a>
+### Minor Changes
+
+* emergency\_patch \- Add role to create or delete temporary resources for an emergency patch deployment
+* health\_check\_report \- Add role to generate comprehensive SCCM infrastructure health check reports with monitoring data and metrics
+* patch\_and\_reboot \- Add role to orchestrate end\-to\-end Windows patching and reboot operations with comprehensive maintenance reporting across multiple target hosts
