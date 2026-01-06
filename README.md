@@ -69,14 +69,36 @@ Every voice is important. If you have something on your mind, create an issue or
 
 ## Tested with Ansible
 
+This collection is tested with Ansible Core 2.15+ and the following Python versions:
+- Python 3.9+
+- Python 3.10+
+- Python 3.11+
 
 ## External requirements
 
+### Microsoft MECM/SCCM Environment
+- Microsoft System Center Configuration Manager (MECM/SCCM) environment
+- WinRM connection to Windows machines
+- PowerShell 5.1 or higher on managed nodes
 
 ### Supported connections
 
+- `winrm` - Windows Remote Management for Windows hosts
+- `psrp` - PowerShell Remoting Protocol
+
 ## Included content
 
+### Roles
+
+- `emergency_patch` - Deploy emergency patches through MECM/SCCM
+- `health_check_report` - Generate health check reports for MECM infrastructure  
+- `patch_and_reboot` - Automated patching and reboot management
+
+### Playbooks
+
+- `emergency_patch.yml` - Emergency patch deployment workflow
+- `health_check_report.yml` - Health check reporting workflow  
+- `patch_and_reboot.yml` - Patch and reboot workflow
 
 ## Using this collection
 
@@ -111,9 +133,6 @@ See [using Ansible collections](https://docs.ansible.com/ansible/devel/user_guid
 ## Release notes
 
 See the [changelog](https://github.com/ansible-collections/infra.mecm_ops/tree/main/CHANGELOG.rst).
-
-## Roadmap
-
 
 ## More information
 
