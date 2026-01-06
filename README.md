@@ -69,22 +69,17 @@ Every voice is important. If you have something on your mind, create an issue or
 
 ## Tested with Ansible
 
-This collection is tested with Ansible Core 2.15+ and the following Python versions:
-- Python 3.9+
+This collection is tested with Ansible Core 2.16 and the following Python versions:
 - Python 3.10+
 - Python 3.11+
+- Python 3.12+
+- Python 3.13+
 
 ## External requirements
 
 ### Microsoft MECM/SCCM Environment
 - Microsoft System Center Configuration Manager (MECM/SCCM) environment
-- WinRM connection to Windows machines
 - PowerShell 5.1 or higher on managed nodes
-
-### Supported connections
-
-- `winrm` - Windows Remote Management for Windows hosts
-- `psrp` - PowerShell Remoting Protocol
 
 ## Included content
 
