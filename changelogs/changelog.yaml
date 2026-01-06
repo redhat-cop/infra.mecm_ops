@@ -16,3 +16,5 @@ releases:
       - 4-add-health-check-report.yml
       - 5-add-patch-and-reboot.yml
     release_date: '2025-12-23'
+  1.0.1:
+    release_date: '2026-01-06'
