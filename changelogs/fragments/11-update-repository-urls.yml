@@ -1,0 +1,3 @@
+---
+trivial:
+  - Update all repository URLs from ansible-collections organization to redhat-cop organization (https://github.com/redhat-cop/infra.mecm_ops).

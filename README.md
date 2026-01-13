@@ -1,5 +1,5 @@
 # Microsoft MECM Infrastructure Operations Collection for Ansible
-[![CI](https://github.com/ansible-collections/infra.mecm_ops/workflows/CI/badge.svg?event=push)](https://github.com/ansible-collections/infra.mecm_ops/actions) [![Codecov](https://img.shields.io/codecov/c/github/ansible-collections/infra.mecm_ops)](https://codecov.io/gh/ansible-collections/infra.mecm_ops)
+[![CI](https://github.com/redhat-cop/infra.mecm_ops/workflows/CI/badge.svg?event=push)](https://github.com/redhat-cop/infra.mecm_ops/actions) [![Codecov](https://img.shields.io/codecov/c/github/redhat-cop/infra.mecm_ops)](https://codecov.io/gh/redhat-cop/infra.mecm_ops)
 
 This collection provides Ansible infrastructure and operations modules for Microsoft System Center Configuration Manager (MECM/SCCM/ConfigMgr) deployments, focusing on infrastructure management, monitoring, and operational tasks.
 
@@ -127,7 +127,7 @@ See [using Ansible collections](https://docs.ansible.com/ansible/devel/user_guid
 
 ## Release notes
 
-See the [changelog](https://github.com/ansible-collections/infra.mecm_ops/tree/main/CHANGELOG.rst).
+See the [changelog](https://github.com/redhat-cop/infra.mecm_ops/tree/main/CHANGELOG.rst).
 
 ## More information
 

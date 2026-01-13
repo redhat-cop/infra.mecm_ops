@@ -334,7 +334,7 @@ The role can be integrated with monitoring and alerting systems:
 
 GNU General Public License v3.0 or later
 
-See [LICENSE](https://github.com/ansible-collections/infra.mecm_ops/blob/main/LICENSE) to see the full text.
+See [LICENSE](https://github.com/redhat-cop/infra.mecm_ops/blob/main/LICENSE) to see the full text.
 
 ## Author Information
 
