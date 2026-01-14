@@ -17,10 +17,10 @@ tags:
   - infrastructure
   - operations
   - monitoring
-repository: https://github.com/ansible-collections/infra.mecm_ops
-# documentation: https://github.com/ansible-collections/infra.mecm_ops/tree/main/docs
-homepage: https://github.com/ansible-collections/infra.mecm_ops
-issues: https://github.com/ansible-collections/infra.mecm_ops/issues
+repository: https://github.com/redhat-cop/infra.mecm_ops
+# documentation: https://github.com/redhat-cop/infra.mecm_ops/tree/main/docs
+homepage: https://github.com/redhat-cop/infra.mecm_ops
+issues: https://github.com/redhat-cop/infra.mecm_ops/issues
 build_ignore:
   - .gitignore
   - changelogs/.plugin-cache.yaml
