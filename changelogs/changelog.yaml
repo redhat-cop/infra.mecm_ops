@@ -18,3 +18,8 @@ releases:
     release_date: '2025-12-23'
   1.0.1:
     release_date: '2026-01-06'
+  1.0.2:
+    changes: {}
+    fragments:
+      - 11-update-repository-urls.yml
+    release_date: '2026-01-20'

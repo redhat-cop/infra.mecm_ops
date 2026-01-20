@@ -2,7 +2,7 @@
 # See https://docs.ansible.com/ansible/latest/dev_guide/collections_galaxy_meta.html
 namespace: infra
 name: mecm_ops
-version: 1.0.1
+version: 1.0.2
 readme: README.md
 authors:
   - Ansible Community
