@@ -7,6 +7,11 @@ CHANGE THIS IN changelogs/config.yaml! Release Notes
 v1.0.2
 ======
 
+Trivial
+-------
+
+- update broken links in README
+
 v1.0.1
 ======
 
